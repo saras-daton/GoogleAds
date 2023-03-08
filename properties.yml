@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: shopping_performance_view
+    description: This table Provides Shopping campaign statistics aggregated at several product dimension levels
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key : ['customer_resource_name','date','ad_group_id','campaign_id','product_item_id','product_title']
+      partition_by : { 'field': 'date', 'data_type': 'date' }
+      cluster_by : ['date','ad_group_id','campaign_id']
