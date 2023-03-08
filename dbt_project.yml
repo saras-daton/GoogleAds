@@ -1,0 +1,54 @@
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'GoogleAds'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: "edm_data_transformation"
+
+require-dbt-version: [">=1.0.0", "<2.0.0"]
+
+vars:
+  raw_database: "edm-saras" #equivalent to project_id in BigQuery
+  raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
+  #raw_database: "EDM"
+  #raw_schema: "EDM"
+
+  currency_conversion_flag: True
+  get_brandname_from_tablename_flag: True
+  brandname_position_in_tablename: 0
+  # Example- default_brandname: "Nike"
+  default_brandname: "" 
+  get_storename_from_tablename_flag: True 
+  storename_position_in_tablename: 1
+  # Example- default_storename: "US"
+  default_storename: "" 
+
+  shopping_performance_view : True
+
+  timezone_conversion_flag : True
+  raw_table_timezone_offset_hours: {
+    "edm-saras.EDM_Daton.Brand_US_GoogleAdsBQ_shopping_performance_view" : 5
+    }
+
+  
+# These configurations specify where dbt should look for different types of files.
+# The `model-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+models:    
+  GoogleAds:
+    +schema: stg_googleads_dbthub
