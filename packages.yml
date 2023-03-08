@@ -1,0 +1,4 @@
+packages:
+
+  - git: https://github.com/sarasdeveloper/currency_exchange_rates.git
+    revision: develop
