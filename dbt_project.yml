@@ -4,34 +4,34 @@
 name: 'GoogleAds'
 version: '1.0.0'
 config-version: 2
-
-# This setting configures which "profile" dbt uses for this project.
-profile: "edm_data_transformation"
-
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
-  raw_database: "edm-saras" #equivalent to project_id in BigQuery
-  raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
-  #raw_database: "EDM"
-  #raw_schema: "EDM"
+  raw_database: "Google" #equivalent to project_id in BigQuery
+    # Example Database name
+  raw_schema: "Ads" #equivalent to dataset in BigQuery
+    # Example Schema name
 
-  currency_conversion_flag: True
   get_brandname_from_tablename_flag: True
   brandname_position_in_tablename: 0
-  # Example- default_brandname: "Nike"
+    # Example- Daton Integration Name: Nike_US_SponsoredBrands --> Position 0, separated by '_'
   default_brandname: "" 
+    # Example- default_brandname: "Nike" --> for Single Brand users, with no Brandname in Daton Integration Name
+
   get_storename_from_tablename_flag: True 
   storename_position_in_tablename: 1
-  # Example- default_storename: "US"
+    # Example- Daton Integration Name: Nike_US_SponsoredBrands --> Position 1, separated by '_'
   default_storename: "" 
+    # Example- default_storename: "US" --> for Single Store users, with no Storename in Daton Integration Name
 
-  shopping_performance_view : True
-
-  timezone_conversion_flag : True
+  currency_conversion_flag: False
+  timezone_conversion_flag : False
   raw_table_timezone_offset_hours: {
-    "edm-saras.EDM_Daton.Brand_US_GoogleAdsBQ_shopping_performance_view" : 5
+    "Google.Ads.Brand_US_GoogleAdsBQ_shopping_performance_view" : 5
     }
+      # Above are Example entries for raw table level input offset hours
+  
+  shopping_performance_view : True
 
   
 # These configurations specify where dbt should look for different types of files.
@@ -51,4 +51,4 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:    
   GoogleAds:
-    +schema: stg_googleads_dbthub
+    +schema: stg_googleads
