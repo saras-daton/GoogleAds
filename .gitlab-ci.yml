@@ -1,0 +1,77 @@
+stages:
+  - Google Client Operations
+  - Generate Git Commands
+  - Push to Client's GitHub
+
+# variables:
+# TODO: Add this to pipeline
+# CLIENT_ID: client1
+# amith-saras pat - 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
+# https://amith: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@github.com/amith-saras/cicdtest.git
+
+# test-client: glpat-TzC9ahKwVA2TFsMM-m-p
+# https://gitlab-ci-token:glpat-TzC9ahKwVA2TFsMM-m-p@gitlab.sarasanalytics.com/enterprise-data-model/client-repositories/test-client.git
+workflow:
+  rules:
+    - if: $CLIENT_ID
+
+copy_config_files:
+  # rules:
+  #   - if: $CLIENT_ID == "NOT_SET"
+  #     when: never
+  #   - when: manual
+  stage: Google Client Operations
+  image: gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+  before_script:
+    - gcloud auth activate-service-account sa-dev-cloud-storage@edm-saras.iam.gserviceaccount.com --key-file=$DEV_CLOUD_STORAGE_KEY
+  script:
+    - mkdir temp_config_files
+    - gcloud storage cp gs://dev-config-scripts/base-config/* temp_config_files/ --recursive
+    - gcloud storage cp gs://dev-client-config/$CLIENT_ID/* temp_config_files/ --recursive
+    - ls -l
+    - pwd
+    - cd temp_config_files
+    - ls -l
+  artifacts:
+    paths:
+      - temp_config_files/
+    expire_in: 1 hour
+
+run_python_script:
+  # rules:
+  #   - when: manual
+  stage: Generate Git Commands
+  image: python:3.11.1-slim
+  dependencies:
+    - copy_config_files
+  script:
+    - ls -l
+    - cd temp_config_files
+    - pip install pandas openpyxl
+    - python cicd.py
+    - ls -l
+    - cat git_commands.sh
+  artifacts:
+    paths:
+      - temp_config_files/
+    expire_in: 1 hour
+
+git_push:
+  stage: Push to Client's GitHub
+  image: bitnami/git:latest
+  dependencies:
+    - run_python_script
+  before_script:
+    - echo $CI_SERVER_HOST
+    - echo $CI_PROJECT_NAMESPACE
+    - echo $CI_PROJECT_NAME
+    - git config --global user.email "${GIT_USER_EMAIL:-$GITLAB_USER_EMAIL}"
+    - git config --global user.name "${GIT_USER_NAME:-$GITLAB_USER_NAME}"
+    - apt update
+    - apt upgrade
+    - apt install rsync -y
+  script:
+    - cd temp_config_files
+    - ls -l
+    - cd ..
+    - bash ./temp_config_files/git_commands.sh

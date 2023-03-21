@@ -1,5 +1,5 @@
 
-{% if var('GoogleShoppingPerformanceView') %}
+{% if var('GoogleAdsShoppingPerformanceView') %}
     {{ config( enabled = True ) }}
 {% else %}
     {{ config( enabled = False ) }}

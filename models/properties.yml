@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: GoogleShoppingPerformanceView
+  - name: GoogleAdsShoppingPerformanceView
     description: This table Provides Shopping campaign statistics aggregated at several product dimension levels
     config:
       materialized: incremental
