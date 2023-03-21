@@ -11,10 +11,10 @@ profile: 'edm_data_transformation'
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
-  raw_database: "edm-saras" #equivalent to project_id in BigQuery
-  raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
-  #raw_database: "EDM"
-  #raw_schema: "EDM"
+  raw_database: "Shopify" #equivalent to project_id in BigQuery
+    # Example Database name
+  raw_schema: "Daton" #equivalent to dataset in BigQuery
+    # Example Schema name
 
   currency_conversion_flag: True
   get_brandname_from_tablename_flag: True
@@ -51,4 +51,4 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:    
   GoogleAds:
-    +schema: stg_googleads_dbthub
+    +schema: stg_googleads
