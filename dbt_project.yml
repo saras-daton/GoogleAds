@@ -4,10 +4,6 @@
 name: 'GoogleAds'
 version: '1.0.0'
 config-version: 2
-
-# This setting configures which "profile" dbt uses for this project.
-profile: 'edm_data_transformation'
-
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
