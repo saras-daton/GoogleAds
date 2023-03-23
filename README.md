@@ -34,8 +34,8 @@ If you haven't already, you will need to create a packages.yml file in your DBT 
 
 ```yaml
 packages:
-  - package: saras-daton/google_ads
-    version: {{1.1.0}}
+  - package: saras-daton/GoogleAds
+    version: 1.1.0
 ```
 
 # Configuration 
