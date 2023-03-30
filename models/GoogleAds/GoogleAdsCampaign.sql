@@ -68,7 +68,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% if target.type =='snowflake' %}
         COALESCE(CUSTOMER.VALUE:currency_code::VARCHAR,'') as currency_code,
         CAMPAIGN.VALUE:name::VARCHAR as campaign_name,
-        CAMPAIGN.VALUE:id::VARCHAR as campaign_id,
+        COALESCE(CAMPAIGN.VALUE:id::VARCHAR,'') as campaign_id,
         METRICS.VALUE:clicks::NUMERIC as clicks,
         METRICS.VALUE:conversions as conversions,
         METRICS.VALUE:cost_micros::FLOAT as cost_micros,
@@ -78,7 +78,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% else %}
         customer.currency_code,
         campaign.name as campaign_name,
-        coalesce(campaign.id,'') as campaign_id,
+        coalesce(CAST(campaign.id as string),'') as campaign_id,
         metrics.clicks,
         metrics.conversions,
         metrics.cost_micros,
