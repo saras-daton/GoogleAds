@@ -23,6 +23,7 @@ vars:
   default_storename: "" 
 
   GoogleAdsShoppingPerformanceView : True
+  GoogleAdsCampaign : True
   
   timezone_conversion_flag : False
   raw_table_timezone_offset_hours: {

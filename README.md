@@ -35,7 +35,7 @@ If you haven't already, you will need to create a packages.yml file in your DBT 
 ```yaml
 packages:
   - package: saras-daton/GoogleAds
-    version: 1.1.0
+    version: 1.1.1
 ```
 
 # Configuration 
@@ -106,6 +106,7 @@ This package contains models from the Google Ads API which includes reports on {
 | **Category**                 | **Model**  | **Description** |
 | ------------------------- | ---------------| ----------------------- |
 |Performance | [GoogleAdsShoppingPerformanceView](models/GoogleAds/GoogleAdsShoppingPerformanceView.sql)  | Provides Shopping campaign statistics aggregated at several product dimension levels.Product dimension values from Merchant Center such as brand, category, custom attributes, product condition and product type will reflect the state of each dimension as of the date and time when the corresponding event was recorded. |
+|Performance | [GoogleAdsCampaign](models/GoogleAds/GoogleAdsCampaign.sql)  | Provides Shopping campaign statistics aggregated at a campaign level. |
 
 
 
@@ -122,6 +123,16 @@ models:
       unique_key : ['customer_resource_name','date','ad_group_id','campaign_id','product_item_id','product_title']
       partition_by : { 'field': 'date', 'data_type': 'date' }
       cluster_by : ['date','ad_group_id','campaign_id']
+
+  - name: GoogleAdsCampaign
+    description: This table Provides Shopping campaign statistics aggregated at a campaign dimension level
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key : ['date','campaign_id']
+      partition_by : { 'field': 'date', 'data_type': 'date' }
+      cluster_by : ['date','campaign_id']
+      
 ```
 ## Resources:
 - Have questions, feedback, or need [help](https://calendly.com/priyanka-vankadaru/30min)? Schedule a call with our data experts or email us at info@sarasanalytics.com.
