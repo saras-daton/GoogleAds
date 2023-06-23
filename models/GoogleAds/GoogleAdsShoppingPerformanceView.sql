@@ -68,7 +68,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         select 
         {% if target.type =='snowflake' %}
         CUSTOMER.VALUE:resource_name::VARCHAR as customer_resource_name,
-        COALESCE(CUSTOMER.VALUE:currency_code::VARCHAR,'') as currency_code,
+        CUSTOMER.VALUE:currency_code::VARCHAR as currency_code,
         CAMPAIGN.VALUE:resource_name::VARCHAR as campaign_resource_name,
         CAMPAIGN.VALUE:name::VARCHAR as campaign_name,
         CAMPAIGN.VALUE:id::VARCHAR as campaign_id,
@@ -88,10 +88,10 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         SHOPPING_PERFORMANCE_VIEW.VALUE:resource_name::VARCHAR as shopping_performance_view_resource_name,
         {% else %}
         CUSTOMER.resource_name as customer_resource_name,
-        COALESCE(CUSTOMER.currency_code,'') as currency_code,
+        CUSTOMER.currency_code as currency_code,
         CAMPAIGN.resource_name as campaign_resource_name,
         CAMPAIGN.name as campaign_name,
-        COALESCE(CAMPAIGN.id,0) as campaign_id,
+        CAMPAIGN.id as campaign_id,
         CAMPAIGN.advertising_channel_type as campaign_advertising_channel_type,
         CAMPAIGN.advertising_channel_sub_type as campaign_advertising_channel_sub_type,
         AD_GROUP.resource_name as ad_group_resource_name,
@@ -103,7 +103,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         METRICS.conversions_value,
         METRICS.impressions,
         SEGMENTS.date,
-        COALESCE(SEGMENTS.product_item_id,0) as product_item_id,
+        COALESCE(SEGMENTS.product_item_id,'') as product_item_id,
         COALESCE(SEGMENTS.product_title,'') as product_title,
         SHOPPING_PERFORMANCE_VIEW.resource_name as shopping_performance_view_resource_name,
         {% endif %}
