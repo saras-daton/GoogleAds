@@ -65,41 +65,22 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% endif %}
         a.* from (
         select 
-        {% if target.type =='snowflake' %}
-        COALESCE(CUSTOMER.VALUE:currency_code::VARCHAR,'') as currency_code,
-        CAMPAIGN.VALUE:name::VARCHAR as campaign_name,
-        COALESCE(CAMPAIGN.VALUE:id::VARCHAR,'') as campaign_id,
-        CAMPAIGN.VALUE:advertising_channel_type::VARCHAR as campaign_advertising_channel_type,
-        CAMPAIGN.VALUE:advertising_channel_sub_type::VARCHAR as campaign_advertising_channel_sub_type,
-        METRICS.VALUE:clicks::NUMERIC as clicks,
-        METRICS.VALUE:conversions as conversions,
-        METRICS.VALUE:cost_micros::FLOAT as cost_micros,
-        METRICS.VALUE:conversions_value AS conversions_value,
-        METRICS.VALUE:impressions::NUMERIC as impressions,
-        SEGMENTS.VALUE:date::DATE as date,
-        {% else %}
-        customer.currency_code,
-        campaign.name as campaign_name,
-        coalesce(campaign.id,0) as campaign_id,
-        campaign.advertising_channel_type as campaign_advertising_channel_type,
-        campaign.advertising_channel_sub_type as campaign_advertising_channel_sub_type,
-        metrics.clicks,
-        metrics.conversions,
-        metrics.cost_micros,
-        metrics.conversions_value,
-        metrics.impressions,
-        segments.date,
-        {% endif %}
+        {{extract_nested_value("customer","currency_code","string")}} as currency_code,
+        COALESCE({{extract_nested_value("campaign","name","string")}},'NA') as campaign_name,
+        COALESCE({{extract_nested_value("campaign","id","string")}},'NA') as campaign_id,
+        {{extract_nested_value("campaign","advertising_channel_type","string")}} as campaign_advertising_channel_type,
+        {{extract_nested_value("campaign","advertising_channel_sub_type","string")}} as campaign_advertising_channel_sub_type,
+        {{extract_nested_value("metrics","clicks","INT64")}} as clicks,
+        {{extract_nested_value("metrics","conversions_value","NUMERIC")}} as conversions_value,
+        {{extract_nested_value("metrics","conversions","NUMERIC")}} as conversions,
+        {{extract_nested_value("metrics","cost_micros","string")}} as cost_micros,
+        {{extract_nested_value("metrics","impressions","INT64")}} as impressions,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        {% if target.type =='snowflake' %}
-            Dense_Rank() OVER (PARTITION BY SEGMENTS.VALUE:date, CAMPAIGN.VALUE:id, CAMPAIGN.VALUE:name  order by {{daton_batch_runtime()}} desc) row_num
-        {% else %}
-            Dense_Rank() OVER (PARTITION BY SEGMENTS.date,CAMPAIGN.id, CAMPAIGN.name order by {{daton_batch_runtime()}} desc) row_num
-        {% endif %}
+        Dense_Rank() OVER (PARTITION BY  coalesce({{extract_nested_value("segments","date","date")}},'NA'),{{extract_nested_value("campaign","id","string")}}, {{extract_nested_value("campaign","name","string")}} order by {{daton_batch_runtime()}} desc) row_num
 	    from {{i}} 
             {{unnesting("customer")}}
             {{unnesting("campaign")}}
