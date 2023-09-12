@@ -75,12 +75,14 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("metrics","conversions","NUMERIC")}} as conversions,
         {{extract_nested_value("metrics","cost_micros","string")}} as cost_micros,
         {{extract_nested_value("metrics","impressions","INT64")}} as impressions,
+        cast(coalesce({{extract_nested_value("segments","date","string")}},'NA') as date) as date,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        Dense_Rank() OVER (PARTITION BY  coalesce({{extract_nested_value("segments","date","date")}},'NA'),{{extract_nested_value("campaign","id","string")}}, {{extract_nested_value("campaign","name","string")}} order by {{daton_batch_runtime()}} desc) row_num
+        Dense_Rank() OVER (PARTITION BY {{extract_nested_value("segments","date","date")}},{{extract_nested_value("campaign","id","string")}}, 
+        {{extract_nested_value("campaign","name","string")}} order by {{daton_batch_runtime()}} desc) row_num
 	    from {{i}} 
             {{unnesting("customer")}}
             {{unnesting("campaign")}}

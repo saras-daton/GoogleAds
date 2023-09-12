@@ -5,11 +5,12 @@ name: 'GoogleAds'
 version: '1.0.0'
 config-version: 2
 require-dbt-version: [">=1.0.0", "<2.0.0"]
+profile : "edm_data_transformation"
 
 vars:
-  raw_database: "Shopify" #equivalent to project_id in BigQuery
+  raw_database: "edm-saras" #equivalent to project_id in BigQuery
     # Example Database name
-  raw_schema: "Daton" #equivalent to dataset in BigQuery
+  raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
     # Example Schema name
 
   currency_conversion_flag: True

@@ -81,7 +81,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {{extract_nested_value("metrics","conversions","NUMERIC")}} as conversions,
         {{extract_nested_value("metrics","cost_micros","string")}} as cost_micros,
         {{extract_nested_value("metrics","impressions","INT64")}} as impressions,
-        coalesce({{extract_nested_value("segments","date","date")}},'NA') as date,
+        cast(coalesce({{extract_nested_value("segments","date","string")}},'NA') as date) as date,
         coalesce({{extract_nested_value("segments","product_item_id","string")}},'NA') as product_item_id,
         coalesce({{extract_nested_value("segments","product_title","string")}},'NA') as product_title,
         {{extract_nested_value("shopping_performance_view","resource_name","string")}} as shopping_performance_view_resource_name,
