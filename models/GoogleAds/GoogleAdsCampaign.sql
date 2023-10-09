@@ -66,7 +66,7 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         a.* from (
         select 
         {{extract_nested_value("customer","currency_code","string")}} as currency_code,
-        COALESCE({{extract_nested_value("campaign","name","string")}},'NA') as campaign_name,
+        coalesce({{extract_nested_value("campaign","name","string")}},'NA') as campaign_name,
         COALESCE({{extract_nested_value("campaign","id","string")}},'NA') as campaign_id,
         {{extract_nested_value("campaign","advertising_channel_type","string")}} as campaign_advertising_channel_type,
         {{extract_nested_value("campaign","advertising_channel_sub_type","string")}} as campaign_advertising_channel_sub_type,
