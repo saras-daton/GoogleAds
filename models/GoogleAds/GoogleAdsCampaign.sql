@@ -69,17 +69,17 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {% endif %}
         a.* from (
         select
-        {{extract_nested_values("customer","currency_code","string")}} as currency_code
-        {{extract_nested_values("campaign","name","string")}} as campaign_name
-        {{extract_nested_values("campaign","id","string")}} as campaign_id
-        {{extract_nested_values("campaign","advertising_channel_type","string")}} as campaign_advertising_channel_type
-        {{extract_nested_values("campaign","advertising_channel_sub_type","string")}} as campaign_advertising_channel_sub_type
-        {{extract_nested_values("metrics","clicks","int")}} as clicks
-        {{extract_nested_values("metrics","conversions","numeric")}} as conversions
-        {{extract_nested_values("metrics","cost_micros","numeric")}} as cost_micros
-        {{extract_nested_values("metrics","conversions_value","numeric")}} as conversions_value
-        {{extract_nested_values("metrics","impressions","numeric")}} as impressions
-        {{extract_nested_values("segments","date","date")}} as date
+        {{extract_nested_value("customer","currency_code","string")}} as currency_code
+        {{extract_nested_value("campaign","name","string")}} as campaign_name
+        {{extract_nested_value("campaign","id","string")}} as campaign_id
+        {{extract_nested_value("campaign","advertising_channel_type","string")}} as campaign_advertising_channel_type
+        {{extract_nested_value("campaign","advertising_channel_sub_type","string")}} as campaign_advertising_channel_sub_type
+        {{extract_nested_value("metrics","clicks","int")}} as clicks
+        {{extract_nested_value("metrics","conversions","numeric")}} as conversions
+        {{extract_nested_value("metrics","cost_micros","numeric")}} as cost_micros
+        {{extract_nested_value("metrics","conversions_value","numeric")}} as conversions_value
+        {{extract_nested_value("metrics","impressions","numeric")}} as impressions
+        {{extract_nested_value("segments","date","date")}} as date
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
