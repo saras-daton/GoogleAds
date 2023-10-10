@@ -69,22 +69,22 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
         {% endif %}
         a.* from (
         select
-        {{extract_nested_value("customer","currency_code","string")}} as currency_code
-        {{extract_nested_value("campaign","name","string")}} as campaign_name
-        {{extract_nested_value("campaign","id","string")}} as campaign_id
-        {{extract_nested_value("campaign","advertising_channel_type","string")}} as campaign_advertising_channel_type
-        {{extract_nested_value("campaign","advertising_channel_sub_type","string")}} as campaign_advertising_channel_sub_type
-        {{extract_nested_value("metrics","clicks","int")}} as clicks
-        {{extract_nested_value("metrics","conversions","numeric")}} as conversions
-        {{extract_nested_value("metrics","cost_micros","numeric")}} as cost_micros
-        {{extract_nested_value("metrics","conversions_value","numeric")}} as conversions_value
-        {{extract_nested_value("metrics","impressions","numeric")}} as impressions
-        {{extract_nested_value("segments","date","date")}} as date
+        {{extract_nested_value("customer","currency_code","string")}} as currency_code,
+        {{extract_nested_value("campaign","name","string")}} as campaign_name,
+        {{extract_nested_value("campaign","id","string")}} as campaign_id,
+        {{extract_nested_value("campaign","advertising_channel_type","string")}} as campaign_advertising_channel_type,
+        {{extract_nested_value("campaign","advertising_channel_sub_type","string")}} as campaign_advertising_channel_sub_type,
+        {{extract_nested_value("metrics","clicks","int")}} as clicks,
+        {{extract_nested_value("metrics","conversions","numeric")}} as conversions,
+        {{extract_nested_value("metrics","cost_micros","numeric")}} as cost_micros,
+        {{extract_nested_value("metrics","conversions_value","numeric")}} as conversions_value,
+        {{extract_nested_value("metrics","impressions","numeric")}} as impressions,
+        {{extract_nested_value("segments","date","date")}} as date,
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
-        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
+        '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
 	    from {{i}} 
             {{unnesting("customer")}}
             {{unnesting("campaign")}}
@@ -94,13 +94,8 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             {# /* -- this filter will only be applied on an incremental run */ #}
             where {{daton_batch_runtime()}}  >= {{max_loaded}}
             {% endif %}
-
-            qualify
-            {% if target.type =='snowflake' %}
-            dense_rank() over (partition by SEGMENTS.VALUE:date, CAMPAIGN.VALUE:id, CAMPAIGN.VALUE:name  order by {{daton_batch_runtime()}} desc) = 1
-            {% else %}
-            dense_rank() over (partition by SEGMENTS.date,CAMPAIGN.id, CAMPAIGN.name order by {{daton_batch_runtime()}} desc) = 1
-            {% endif %}
+            qualify dense_rank() over (partition by {{extract_nested_value("segments","date","date")}},{{extract_nested_value("campaign","id","string")}}, 
+            {{extract_nested_value("campaign","name","string")}} order by {{daton_batch_runtime()}} desc) = 1       
         ) a
             {% if var('currency_conversion_flag') %}
                 left join {{ref('ExchangeRates')}} c on date(a.date) = c.date and currency_code = c.to_currency_code  
