@@ -96,6 +96,16 @@ This package contains models from the Google Ads API which includes reports on {
 |Performance | [GoogleAdsShoppingPerformanceView](models/GoogleAds/GoogleAdsShoppingPerformanceView.sql)  | Provides Shopping campaign statistics aggregated at several product dimension levels.Product dimension values from Merchant Center such as brand, category, custom attributes, product condition and product type will reflect the state of each dimension as of the date and time when the corresponding event was recorded. |
 |Performance | [GoogleAdsCampaign](models/GoogleAds/GoogleAdsCampaign.sql)  | Provides Shopping campaign statistics aggregated at a campaign level. |
 
+## DBT Tests
+
+The tests property defines assertions about a column, table, or view. The property contains a list of generic tests, referenced by name, which can include the four built-in generic tests available in dbt. For example, you can add tests that ensure a column contains no duplicates and zero null values. Any arguments or configurations passed to those tests should be nested below the test name.
+
+| **Tests**  | **Description** |
+| ---------------| ------------------------------------------- |
+| [Not Null Test](https://docs.getdbt.com/reference/resource-properties/tests#testing-an-expression)  | This test validates that there are no null values present in a column |
+| [Data Recency Test](https://github.com/dbt-labs/dbt-utils/blob/main/macros/generic_tests/recency.sql)  | This is used to check for issues with data refresh within {{ x }} days, please specify the value of number of days at {{ x }} |
+| [Accepted Value Test](https://docs.getdbt.com/reference/resource-properties/tests#accepted_values)  | This test validates that all of the values in a column are present in a supplied list of values. If any values other than those provided in the list are present, then the test will fail, by default it consists of default values and this needs to be changed based on the project |
+| [Uniqueness Test](https://docs.getdbt.com/reference/resource-properties/tests#testing-an-expression)  | This test validates that there are no duplicate values present in a field |
 
 
 ### For details about default configurations for Table Primary Key columns, Partition columns, Clustering columns, please refer the properties.yaml used for this package as below. 
