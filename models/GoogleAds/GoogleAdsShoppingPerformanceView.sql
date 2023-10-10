@@ -11,7 +11,7 @@
 
 {% if is_incremental() %}
 {%- set max_loaded_query -%}
-SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
+select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
 {% endset %}
 
 {%- set max_loaded_results = run_query(max_loaded_query) -%}
@@ -51,9 +51,12 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             {% set store = var('default_storename') %}
         {% endif %}
 
+        {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
+            {% set hr = var('raw_table_timezone_offset_hours')[i] %}
+        {% else %}
+            {% set hr = 0 %}
+        {% endif %}
 
-    SELECT * {{exclude()}} (row_num)
-    From (
         select
         '{{brand}}' as brand,
         '{{store}}' as store,
@@ -66,57 +69,31 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
         {% endif %}
         a.* from (
         select 
-        {% if target.type =='snowflake' %}
-        CUSTOMER.VALUE:resource_name::VARCHAR as customer_resource_name,
-        CUSTOMER.VALUE:currency_code::VARCHAR as currency_code,
-        CAMPAIGN.VALUE:resource_name::VARCHAR as campaign_resource_name,
-        CAMPAIGN.VALUE:name::VARCHAR as campaign_name,
-        CAMPAIGN.VALUE:id::VARCHAR as campaign_id,
-        CAMPAIGN.VALUE:advertising_channel_type::VARCHAR as campaign_advertising_channel_type,
-        CAMPAIGN.VALUE:advertising_channel_sub_type::VARCHAR as campaign_advertising_channel_sub_type,
-        AD_GROUP.VALUE:resource_name::VARCHAR as ad_group_resource_name,
-        AD_GROUP.VALUE:id::VARCHAR as ad_group_id,
-        AD_GROUP.VALUE:name::VARCHAR as ad_group_name,
-        METRICS.VALUE:clicks::NUMERIC as clicks,
-        METRICS.VALUE:conversions as conversions,
-        METRICS.VALUE:cost_micros::FLOAT as cost_micros,
-        METRICS.VALUE:conversions_value AS conversions_value,
-        METRICS.VALUE:impressions::NUMERIC as impressions,
-        SEGMENTS.VALUE:date::DATE as date,
-        SEGMENTS.VALUE:product_item_id::VARCHAR as product_item_id,
-        SEGMENTS.VALUE:product_title::VARCHAR as product_title,
-        SHOPPING_PERFORMANCE_VIEW.VALUE:resource_name::VARCHAR as shopping_performance_view_resource_name,
-        {% else %}
-        CUSTOMER.resource_name as customer_resource_name,
-        CUSTOMER.currency_code as currency_code,
-        CAMPAIGN.resource_name as campaign_resource_name,
-        CAMPAIGN.name as campaign_name,
-        CAMPAIGN.id as campaign_id,
-        CAMPAIGN.advertising_channel_type as campaign_advertising_channel_type,
-        CAMPAIGN.advertising_channel_sub_type as campaign_advertising_channel_sub_type,
-        AD_GROUP.resource_name as ad_group_resource_name,
-        AD_GROUP.id as ad_group_id,
-        AD_GROUP.name as ad_group_name,
-        METRICS.clicks,
-        METRICS.conversions,
-        METRICS.cost_micros,
-        METRICS.conversions_value,
-        METRICS.impressions,
-        SEGMENTS.date,
-        COALESCE(SEGMENTS.product_item_id,'') as product_item_id,
-        COALESCE(SEGMENTS.product_title,'') as product_title,
-        SHOPPING_PERFORMANCE_VIEW.resource_name as shopping_performance_view_resource_name,
-        {% endif %}
+        {{extract_nested_values("customer","resource_name","string")}} as customer_resource_name
+        {{extract_nested_values("customer","currency_code","string")}} as customer_currency_code
+        {{extract_nested_values("campaign","resource_name","string")}} as campaign_resource_name
+        {{extract_nested_values("campaign","name","string")}} as campaign_name
+        {{extract_nested_values("campaign","id","string")}} as campaign_id
+        {{extract_nested_values("campaign","advertising_channel_type","string")}} as campaign_advertising_channel_type
+        {{extract_nested_values("campaign","advertising_channel_sub_type","string")}} as campaign_advertising_channel_sub_type
+        {{extract_nested_values("ad_group","resource_name","string")}} as ad_group_resource_name
+        {{extract_nested_values("ad_group","currency_code","string")}} as currency_code
+        {{extract_nested_values("ad_group","currency_code","string")}} as currency_code
+        {{extract_nested_values("metrics","clicks","int")}} as clicks
+        {{extract_nested_values("metrics","conversions","numeric")}} as conversions
+        {{extract_nested_values("metrics","cost_micros","numeric")}} as cost_micros
+        {{extract_nested_values("metrics","conversions_value","numeric")}} as conversions_value
+        {{extract_nested_values("metrics","impressions","numeric")}} as impressions
+        {{extract_nested_values("segments","date","date")}} as date
+        {{extract_nested_values("segments","product_item_id","string")}} as product_item_id
+        {{extract_nested_values("segments","product_title","string")}} as product_title
+        {{extract_nested_values("shopping_performance_view","resource_name","string")}} as shopping_performance_view_resource_name
         {{daton_user_id()}} as _daton_user_id,
         {{daton_batch_runtime()}} as _daton_batch_runtime,
         {{daton_batch_id()}} as _daton_batch_id,
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id,
-        {% if target.type =='snowflake' %}
-            Dense_Rank() OVER (PARTITION BY CUSTOMER.VALUE:resource_name, SEGMENTS.VALUE:date, AD_GROUP.VALUE:id, CAMPAIGN.VALUE:id, SEGMENTS.VALUE:product_item_id, SEGMENTS.VALUE:product_title order by {{daton_batch_runtime()}} desc) row_num
-        {% else %}
-            Dense_Rank() OVER (PARTITION BY CUSTOMER.resource_name, SEGMENTS.date, AD_GROUP.id,CAMPAIGN.id,SEGMENTS.product_item_id,SEGMENTS.product_title order by {{daton_batch_runtime()}} desc) row_num
-        {% endif %}
+        
 	    from {{i}} 
             {{unnesting("CUSTOMER")}}
             {{unnesting("CAMPAIGN")}}
@@ -126,14 +103,19 @@ SELECT coalesce(MAX(_daton_batch_runtime) - 2592000000,0) FROM {{ this }}
             {{unnesting("SHOPPING_PERFORMANCE_VIEW")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            WHERE {{daton_batch_runtime()}}  >= {{max_loaded}}
+            where {{daton_batch_runtime()}}  >= {{max_loaded}}
+            {% endif %}
+
+            qualify
+            {% if target.type =='snowflake' %}
+                dense_rank() over (partition by CUSTOMER.VALUE:resource_name, SEGMENTS.VALUE:date, AD_GROUP.VALUE:id, CAMPAIGN.VALUE:id, SEGMENTS.VALUE:product_item_id, SEGMENTS.VALUE:product_title order by {{daton_batch_runtime()}} desc) = 1
+            {% else %}
+                dense_rank() over (partition by CUSTOMER.resource_name, SEGMENTS.date, AD_GROUP.id,CAMPAIGN.id,SEGMENTS.product_item_id,SEGMENTS.product_title order by {{daton_batch_runtime()}} desc) = 1
             {% endif %}
     
         ) a
             {% if var('currency_conversion_flag') %}
                 left join {{ref('ExchangeRates')}} c on date(a.date) = c.date and currency_code = c.to_currency_code  
             {% endif %}
-    )
-        where row_num = 1
     {% if not loop.last %} union all {% endif %}
     {% endfor %}
