@@ -8,35 +8,11 @@
  --depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
-
-{% if is_incremental() %}
-{%- set max_loaded_query -%}
-select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
-{% endset %}
-
-{%- set max_loaded_results = run_query(max_loaded_query) -%}
-
-{%- if execute -%}
-{% set max_loaded = max_loaded_results.rows[0].values()[0] %}
-{% else %}
-{% set max_loaded = 0 %}
-{%- endif -%}
-{% endif %}
-
-{% set table_name_query %}
-{{set_table_name('%googleads%campaign')}}    
-{% endset %}  
-
-
-
-{% set results = run_query(table_name_query) %}
-
-{% if execute %}
-{# Return the first column #}
-{% set results_list = results.columns[0].values() %}
-{% else %}
-{% set results_list = [] %}
-{% endif %}
+{% set relations = dbt_utils.get_relations_by_pattern(
+schema_pattern=var('raw_schema'),
+table_pattern=var('gads_campaign_tbl_ptrn'),
+exclude=var('gads_campaign_tbl_exclude_ptrn'),
+database=var('raw_database')) %}
 
 {% for i in results_list %}
         {% if var('get_brandname_from_tablename_flag') %}
@@ -92,7 +68,7 @@ select coalesce(max(_daton_batch_runtime) - 2592000000,0) from {{ this }}
             {{unnesting("segments")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            where {{daton_batch_runtime()}}  >= {{max_loaded}}
+            where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('sb_campaign_lookback') }},0) from {{ this }})
             {% endif %}
             qualify dense_rank() over (partition by {{extract_nested_value("segments","date","date")}},{{extract_nested_value("campaign","id","string")}}, 
             {{extract_nested_value("campaign","name","string")}} order by {{daton_batch_runtime()}} desc) = 1       

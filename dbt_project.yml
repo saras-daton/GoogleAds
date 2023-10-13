@@ -30,6 +30,13 @@ vars:
     "edm-saras.EDM_Daton.Brand_US_GoogleAdsBQ_shopping_performance_view" : 6
     }
 
+gads_campaign_tbl_ptrn: '%googleads%campaign'
+gads_exclude_tbl_ptrn: ''
+gads_campaign_lookback: 2592000000
+
+gads_shopping_performance_view_tbl_ptrn: '%googleads%shopping_performance_view'
+gads_shopping_performance_view_exclude_tbl_ptrn: ''
+gads_shopping_performance_view_lookback: 2592000000
   
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
