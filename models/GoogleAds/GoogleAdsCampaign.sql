@@ -11,21 +11,22 @@
 {% set relations = dbt_utils.get_relations_by_pattern(
 schema_pattern=var('raw_schema'),
 table_pattern=var('gads_campaign_tbl_ptrn'),
-exclude=var('gads_campaign_tbl_exclude_ptrn'),
+exclude=var('gads_campaign_exclude_tbl_ptrn'),
 database=var('raw_database')) %}
 
-{% for i in results_list %}
-        {% if var('get_brandname_from_tablename_flag') %}
-            {% set brand =i.split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-        {% else %}
-            {% set brand = var('default_brandname') %}
-        {% endif %}
+{% for i in relations %}
+    {% if var('get_brandname_from_tablename_flag') %}
+        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
+    {% else %}
+        {% set brand = var('default_brandname') %}
+    {% endif %}
 
-        {% if var('get_storename_from_tablename_flag') %}
-            {% set store =i.split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-        {% else %}
-            {% set store = var('default_storename') %}
-        {% endif %}
+    {% if var('get_storename_from_tablename_flag') %}
+        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
+    {% else %}
+        {% set store = var('default_storename') %}
+    {% endif %}
+       
 
         {% if var('timezone_conversion_flag') and i.lower() in tables_lowercase_list and i in var('raw_table_timezone_offset_hours')%}
             {% set hr = var('raw_table_timezone_offset_hours')[i] %}
@@ -68,7 +69,7 @@ database=var('raw_database')) %}
             {{unnesting("segments")}}
             {% if is_incremental() %}
             {# /* -- this filter will only be applied on an incremental run */ #}
-            where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('sb_campaign_lookback') }},0) from {{ this }})
+            where {{daton_batch_runtime()}}  >= (select coalesce(max(_daton_batch_runtime) - {{var('gads_campaign_lookback') }},0) from {{ this }})
             {% endif %}
             qualify dense_rank() over (partition by {{extract_nested_value("segments","date","date")}},{{extract_nested_value("campaign","id","string")}}, 
             {{extract_nested_value("campaign","name","string")}} order by {{daton_batch_runtime()}} desc) = 1       

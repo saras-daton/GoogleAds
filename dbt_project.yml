@@ -7,9 +7,9 @@ config-version: 2
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 vars:
-  raw_database: "Shopify" #equivalent to project_id in BigQuery
+  raw_database: "edm-saras" #equivalent to project_id in BigQuery
     # Example Database name
-  raw_schema: "Daton" #equivalent to dataset in BigQuery
+  raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
     # Example Schema name
 
   currency_conversion_flag: True
@@ -30,13 +30,13 @@ vars:
     "edm-saras.EDM_Daton.Brand_US_GoogleAdsBQ_shopping_performance_view" : 6
     }
 
-gads_campaign_tbl_ptrn: '%googleads%campaign'
-gads_exclude_tbl_ptrn: ''
-gads_campaign_lookback: 2592000000
+  gads_campaign_tbl_ptrn: '%googleads%campaign'
+  gads_campaign_exclude_tbl_ptrn: ''
+  gads_campaign_lookback: 2592000000
 
-gads_shopping_performance_view_tbl_ptrn: '%googleads%shopping_performance_view'
-gads_shopping_performance_view_exclude_tbl_ptrn: ''
-gads_shopping_performance_view_lookback: 2592000000
+  gads_shopping_performance_view_tbl_ptrn: '%googleads%shopping_performance_view'
+  gads_shopping_performance_view_exclude_tbl_ptrn: ''
+  gads_shopping_performance_view_lookback: 2592000000
   
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
