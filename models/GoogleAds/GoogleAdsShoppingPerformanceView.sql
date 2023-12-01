@@ -9,38 +9,17 @@
  --depends_on: {{ ref('ExchangeRates') }}
 {% endif %}
 
-{% set relations = dbt_utils.get_relations_by_pattern(
-schema_pattern=var('raw_schema'),
-table_pattern=var('gads_shopping_performance_view_tbl_ptrn'),
-exclude=var('gads_shopping_performance_view_exclude_tbl_ptrn'),
-database=var('raw_database')) %}
-
-{% for i in relations %}
-    {% if var('get_brandname_from_tablename_flag') %}
-        {% set brand =replace(i,'`','').split('.')[2].split('_')[var('brandname_position_in_tablename')] %}
-    {% else %}
-        {% set brand = var('default_brandname') %}
-    {% endif %}
-
-    {% if var('get_storename_from_tablename_flag') %}
-        {% set store =replace(i,'`','').split('.')[2].split('_')[var('storename_position_in_tablename')] %}
-    {% else %}
-        {% set store = var('default_storename') %}
-    {% endif %}
+{# /*--calling macro for tables list and remove exclude pattern */ #}
+{% set result =set_table_name("gads_shopping_performance_view_tbl_ptrn","gads_shopping_performance_view_exclude_tbl_ptrn") %}
+{# /*--iterating through all the tables */ #}
+{% for i in result %}
 
         select
-        '{{brand}}' as brand,
-        '{{store}}' as store,
-        {% if var('currency_conversion_flag') %}
-            case when c.value is null then 1 else c.value end as exchange_currency_rate,
-            case when c.from_currency_code is null then a.currency_code else c.from_currency_code end as exchange_currency_code,
-        {% else %}
-            cast(1 as decimal) as exchange_currency_rate,
-            cast(null as string) as exchange_currency_code, 
-        {% endif %}
+        {{ extract_brand_and_store_name_from_table(i, var('brandname_position_in_tablename'), var('get_brandname_from_tablename_flag'), var('default_brandname')) }} as brand,
+        {{ extract_brand_and_store_name_from_table(i, var('storename_position_in_tablename'), var('get_storename_from_tablename_flag'), var('default_storename')) }} as store,
+        {{ currency_conversion('c.value', 'c.from_currency_code', 'customer_currency_code') }},
         a.* from (
         select
-        currency_code,
         {{extract_nested_value("customer","resource_name","string")}} as customer_resource_name,
         {{extract_nested_value("customer","currency_code","string")}} as customer_currency_code,
         {{extract_nested_value("campaign","resource_name","string")}} as campaign_resource_name,
@@ -65,7 +44,7 @@ database=var('raw_database')) %}
         current_timestamp() as _last_updated,
         '{{env_var("DBT_CLOUD_RUN_ID", "manual")}}' as _run_id
         
-	    from {{i}} 
+	    from {{i}}
             {{unnesting("CUSTOMER")}}
             {{unnesting("CAMPAIGN")}}
             {{unnesting("AD_GROUP")}}
@@ -82,7 +61,7 @@ database=var('raw_database')) %}
             {{extract_nested_value("segments","product_title","string")}} order by {{daton_batch_runtime()}} desc) = 1
         ) a
             {% if var('currency_conversion_flag') %}
-                left join {{ref('ExchangeRates')}} c on date(a.date) = c.date and currency_code = c.to_currency_code  
+            left join {{ref('ExchangeRates')}} c on date(a.date) = c.date and customer_currency_code = c.to_currency_code  
             {% endif %}
     {% if not loop.last %} union all {% endif %}
     {% endfor %}
