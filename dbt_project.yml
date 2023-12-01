@@ -12,7 +12,7 @@ vars:
   raw_schema: "EDM_Daton" #equivalent to dataset in BigQuery
     # Example Schema name
 
-  currency_conversion_flag: True
+  currency_conversion_flag: False
   get_brandname_from_tablename_flag: True
   brandname_position_in_tablename: 0
   # Example- default_brandname: "Nike"
@@ -24,6 +24,8 @@ vars:
 
   GoogleAdsShoppingPerformanceView : True
   GoogleAdsCampaign : True
+  GoogleAdsKeywordReport: True
+  GoogleAdsSearchTermReport: True
   
   timezone_conversion_flag : False
   raw_table_timezone_offset_hours: {
@@ -34,9 +36,17 @@ vars:
   gads_campaign_exclude_tbl_ptrn: ''
   gads_campaign_lookback: 2592000000
 
+  gads_keyword_tbl_ptrn: '%googleads%keyword%report'
+  gads_keyword_exclude_tbl_ptrn: ''
+  gads_keyword_lookback: 2592000000
+
   gads_shopping_performance_view_tbl_ptrn: '%googleads%shopping_performance_view'
   gads_shopping_performance_view_exclude_tbl_ptrn: ''
   gads_shopping_performance_view_lookback: 2592000000
+
+  gads_search_term_tbl_ptrn: '%googleads%search%term%report'
+  gads_search_term_exclude_tbl_ptrn: ''
+  gads_search_term_lookback: 2592000000
   
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be

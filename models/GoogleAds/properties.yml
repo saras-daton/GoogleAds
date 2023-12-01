@@ -17,4 +17,23 @@ models:
       unique_key : ['date','campaign_id','campaign_name']
       partition_by : { 'field': 'date', 'data_type': 'date' }
       cluster_by : ['date','campaign_id']
+  
+  - name: GoogleAdsKeywordReport
+    description: None
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key : ['date','device','campaign_id', 'ad_group_id', 'keyword_text', 'keyword_match_type']
+      partition_by : { 'field': 'date', 'data_type': 'date' }
+      cluster_by : ['date','ad_group_id','campaign_id']
+
+  - name: GoogleAdsSearchTermReport
+    description: None
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key : ['date','device','campaign_id', 'ad_group_id', 'search_term']
+      partition_by : { 'field': 'date', 'data_type': 'date' }
+      cluster_by : ['date','ad_group_id','campaign_id']
+
 
