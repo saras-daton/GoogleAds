@@ -95,6 +95,8 @@ This package contains models from the Google Ads API which includes reports on {
 | ------------------------- | ---------------| ----------------------- |
 |Performance | [GoogleAdsShoppingPerformanceView](models/GoogleAds/GoogleAdsShoppingPerformanceView.sql)  | Provides Shopping campaign statistics aggregated at several product dimension levels.Product dimension values from Merchant Center such as brand, category, custom attributes, product condition and product type will reflect the state of each dimension as of the date and time when the corresponding event was recorded. |
 |Performance | [GoogleAdsCampaign](models/GoogleAds/GoogleAdsCampaign.sql)  | Provides Shopping campaign statistics aggregated at a campaign level. |
+|Performance | [GoogleAdsKeywordReport](models/GoogleAds/GoogleAdsKeywordReport.sql)  | Provides shopping statistics aggregated at a Keyword level. |
+|Performance | [GoogleAdsSearchTermReport](models/GoogleAds/GoogleAdsSearchTermReport.sql)  | Provides Shopping campaign statistics aggregated on a search term level. |
 
 ## DBT Tests
 
@@ -131,6 +133,23 @@ models:
       partition_by : { 'field': 'date', 'data_type': 'date' }
       cluster_by : ['date','campaign_id']
       
+  - name: GoogleAdsKeywordReport
+    description: None
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key : ['date','device','campaign_id', 'ad_group_id', 'keyword_text', 'keyword_match_type']
+      partition_by : { 'field': 'date', 'data_type': 'date' }
+      cluster_by : ['date','ad_group_id','campaign_id']
+
+  - name: GoogleAdsSearchTermReport
+    description: None
+    config:
+      materialized: incremental
+      incremental_strategy: merge
+      unique_key : ['date','device','campaign_id', 'ad_group_id', 'search_term']
+      partition_by : { 'field': 'date', 'data_type': 'date' }
+      cluster_by : ['date','ad_group_id','campaign_id']      
 ```
 ## Resources:
 - Have questions, feedback, or need [help](https://calendly.com/priyanka-vankadaru/30min)? Schedule a call with our data experts or email us at info@sarasanalytics.com.
